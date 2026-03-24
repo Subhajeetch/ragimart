@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 
 type Tab = "options" | "email";
+
 
 export default function LoginPage() {
   const [tab, setTab] = useState<Tab>("options");
@@ -13,6 +15,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const router = useRouter(); 
   const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:8000";
 
   async function handleGoogle() {
@@ -23,26 +26,33 @@ export default function LoginPage() {
     await authClient.signIn.social({ provider: "apple", callbackURL: `${APP_URL}/home` });
   }
 
-  async function handleEmail(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+ async function handleEmail(e: React.FormEvent) {
+  e.preventDefault();
+  setError("");
+  setLoading(true);
 
-    // email.split("@")[0] returns string | undefined — fallback to email itself
-    const name = email.split("@")[0] ?? email;
+  const name = email.split("@")[0] ?? email;
 
-    try {
-      if (isLogin) {
-        const res = await authClient.signIn.email({ email, password, callbackURL: "/home" });
-        if (res.error) setError(res.error.message ?? "Login failed");
+  try {
+    if (isLogin) {
+      const res = await authClient.signIn.email({ email, password });
+      if (res.error) {
+        setError(res.error.message ?? "Login failed");
       } else {
-        const res = await authClient.signUp.email({ email, password, name, callbackURL: "/home" });
-        if (res.error) setError(res.error.message ?? "Signup failed");
+        router.push("/home");  // ← manual redirect, no callbackURL
       }
-    } finally {
-      setLoading(false);
+    } else {
+      const res = await authClient.signUp.email({ email, password, name });
+      if (res.error) {
+        setError(res.error.message ?? "Signup failed");
+      } else {
+        router.push("/home");  // ← manual redirect, no callbackURL
+      }
     }
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <main className="min-h-screen bg-neutral-950 flex items-center justify-center p-6">
