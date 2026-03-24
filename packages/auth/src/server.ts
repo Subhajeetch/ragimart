@@ -11,6 +11,8 @@ export function createAuth(db: DrizzleD1Database<typeof schema>, env: {
   APPLE_CLIENT_ID: string;
   APPLE_CLIENT_SECRET: string;
   NODE_ENV?: string;
+  API_URL?: string;
+  ORIGINS?: string;
 }) {
   const isProd = env.NODE_ENV === "production";
 
@@ -25,20 +27,21 @@ export function createAuth(db: DrizzleD1Database<typeof schema>, env: {
       },
     }),
 
-    baseURL: isProd ? "https://api.example.com" : "http://localhost:8002",
+    baseURL: isProd ? env.API_URL : "http://localhost:8000",
     basePath: "/api/auth",
 
     trustedOrigins: [
-    "https://example.com",
-    "https://admin.example.com",
-    "http://localhost:8000",   
-    "http://localhost:8001",
+      ...(env.ORIGINS ? env.ORIGINS.split(",") : []),
+      "https://ragimart.com",
+      "https://admin.ragimart.com",
+      "http://localhost:8000",
+      "http://localhost:8001",
     ],
 
     advanced: {
       crossSubDomainCookies: {
         enabled: isProd,
-        domain: isProd ? ".example.com" : undefined,
+        domain: isProd ? env.API_URL?.split("://")[1] : undefined,
       },
     },
 
