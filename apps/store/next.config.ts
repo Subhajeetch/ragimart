@@ -5,8 +5,8 @@ const nextConfig: NextConfig = {
 		return [
 			{
 				source: '/api/:path*',
-				destination: process.env.API_URL
-					? `${process.env.API_URL}/:path*`  // Production
+				destination: process.env.NEXT_PUBLIC_API_URL
+					? `${process.env.NEXT_PUBLIC_API_URL}/:path*`  // Production
 					: 'http://localhost:8002/:path*',   // Local
 			},
 		];

@@ -27,6 +27,9 @@ importers:
       '@opennextjs/cloudflare':
         specifier: ^1.17.1
         version: 1.17.1(next@16.1.5(react-dom@19.1.5(react@19.1.5))(react@19.1.5))(wrangler@4.73.0(@cloudflare/workers-types@4.20260313.1))
+      '@repo/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui

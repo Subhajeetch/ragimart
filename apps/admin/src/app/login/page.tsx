@@ -10,7 +10,7 @@ export default function LoginPage() {
   return (
     <LoginForm
       authClient={authClient}
-      appUrl={process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:8000"}
+      appUrl={process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:8001"}
       onSuccess={() => router.push("/home")}
     />
   );

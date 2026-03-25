@@ -8,11 +8,10 @@ import * as schema from "@repo/db/schema";
 export function createAuth(db: DrizzleD1Database<typeof schema>, env: {
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
-  APPLE_CLIENT_ID: string;
-  APPLE_CLIENT_SECRET: string;
   NODE_ENV?: string;
   API_URL?: string;
   ORIGINS?: string;
+  DOMAIN?: string;
 }) {
   const isProd = env.NODE_ENV === "production";
 
@@ -27,7 +26,7 @@ export function createAuth(db: DrizzleD1Database<typeof schema>, env: {
       },
     }),
 
-    baseURL: isProd ? env.API_URL : "http://localhost:8000",
+    baseURL: isProd ? env.API_URL : "http://localhost:8002",
     basePath: "/api/auth",
 
     trustedOrigins: [
@@ -41,7 +40,7 @@ export function createAuth(db: DrizzleD1Database<typeof schema>, env: {
     advanced: {
       crossSubDomainCookies: {
         enabled: isProd,
-        domain: isProd ? env.API_URL?.split("://")[1] : undefined,
+        domain: isProd && env.DOMAIN ? env.DOMAIN : undefined,
       },
     },
 

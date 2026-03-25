@@ -7,11 +7,10 @@ interface Env {
   DB: D1Database;
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
-  APPLE_CLIENT_ID: string;
-  APPLE_CLIENT_SECRET: string;
   NODE_ENV?: string;
   API_URL?: string;
   ORIGINS?: string;
+  DOMAIN?: string;
 }
 
 const app = new Hono<{ Bindings: Env }>();
@@ -31,11 +30,10 @@ app.on(["GET", "POST"], "/api/auth/**", (c) => {
   const auth = createAuth(db, {
     GOOGLE_CLIENT_ID: c.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: c.env.GOOGLE_CLIENT_SECRET,
-    APPLE_CLIENT_ID: c.env.APPLE_CLIENT_ID,
-    APPLE_CLIENT_SECRET: c.env.APPLE_CLIENT_SECRET,
     NODE_ENV: c.env.NODE_ENV,
     API_URL: c.env.API_URL,
     ORIGINS: c.env.ORIGINS,
+    DOMAIN: c.env.DOMAIN,
   });
   return auth.handler(c.req.raw);
 });
