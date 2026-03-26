@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
+import "../styles/login-form.css";
 
 
 type AuthClient = {
@@ -10,176 +10,293 @@ type AuthClient = {
     email: (opts: { email: string; password: string }) => Promise<{ error?: { message?: string } | null }>;
   };
   signUp: {
-    email: (opts: { email: string; password: string; name: string }) => Promise<{ error?: { message?: string } | null }>;
+    email: (opts: {
+      email: string;
+      password: string;
+      name: string;
+    }) => Promise<{ error?: { message?: string } | null }>;
   };
 };
 
 type Props = {
   authClient: AuthClient;
-  appUrl: string;
-  onSuccess: () => void; // for handling routing after successful login/signup
+  appUrl?: string;
+  onSuccess: () => void;
 };
 
-type Tab = "options" | "email";
 
-export default function LoginPage( { authClient, appUrl, onSuccess }: Props) {
-  const [tab, setTab] = useState<Tab>("options");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+export default function LoginPage({ authClient, appUrl, onSuccess }: Props) {
   const [isLogin, setIsLogin] = useState(true);
+
+
+  const [name, setName] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [gender, setGender] = useState("");
+  const [showSignupPw, setShowSignupPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+
+
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [showLoginPw, setShowLoginPw] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const APP_URL = appUrl ?? "http://localhost:8000";
 
+
+  function switchMode() {
+    setIsLogin((v) => !v);
+    setError("");
+  }
+
   async function handleGoogle() {
-    await authClient.signIn.social({ provider: "google", callbackURL: `${APP_URL}/home` });
-  }
-
-  async function handleEmail(e: React.FormEvent) {
-  e.preventDefault();
-  setError("");
-  setLoading(true);
-
-  const name = email.split("@")[0] ?? email;
-
-  try {
-    if (isLogin) {
-      const res = await authClient.signIn.email({ email, password });
-      if (res.error) {
-        setError(res.error.message ?? "Login failed");
-      } else {
-        onSuccess();  // ← manual redirect, no callbackURL
-      }
-    } else {
-      const res = await authClient.signUp.email({ email, password, name });
-      if (res.error) {
-        setError(res.error.message ?? "Signup failed");
-      } else {
-        onSuccess(); // ← manual redirect, no callbackURL
-      }
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: `${APP_URL}/home`,
+      });
+    } catch {
+      setError("Google sign-in failed. Please try again.");
     }
-  } finally {
-    setLoading(false);
   }
-}
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError("");
+
+    if (!isLogin) {
+      if (!name.trim()) return setError("Please enter your name.");
+      if (!gender) return setError("Please select your gender.");
+      if (signupPassword.length < 8) return setError("Password must be at least 8 characters.");
+      if (signupPassword !== confirmPassword) return setError("Passwords do not match.");
+    }
+
+    setLoading(true);
+    try {
+      if (isLogin) {
+        const res = await authClient.signIn.email({ email: loginEmail, password: loginPassword });
+        if (res?.error) setError(res.error.message ?? "Login failed. Please try again.");
+        else onSuccess();
+      } else {
+        const res = await authClient.signUp.email({
+          email: signupEmail,
+          password: signupPassword,
+          name: name.trim(),
+        });
+        if (res?.error) setError(res.error.message ?? "Sign-up failed. Please try again.");
+        else onSuccess();
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
 
   return (
-    <main className="min-h-screen bg-[rgb(124,145,189)] w-full flex items-center justify-center p-6">
-      <div className="max-w-md bg-neutral-500 border border-neutral-800 rounded-2xl p-8 shadow-2xl">
+    <main className="auth-page">
+      <div className="auth-container">
 
-        {/* Brand */}
-        <div className="flex items-center gap-2.5 mb-8">
-          <div className="w-7 h-7 rounded-lg bg-linear-to-br from-neutral-300 to-neutral-600" />
-          <span className="text-sm font-bold tracking-widest text-neutral-200">s</span>
+        
+        <div className="brand">
+          
+          <div className="brand-icon">R</div>
+          <span className="brand-name">ragimart</span>
         </div>
 
-        {tab === "options" && (
-          <div>
-            <h1 className="text-2xl font-bold text-neutral-100 tracking-tight mb-1">Welcome back</h1>
-            <p className="text-sm text-neutral-500 mb-8">Sign in to continue shopping</p>
+        
+        <h1 className="auth-heading">
+          {isLogin ? "Log In" : "Create Account"}
+        </h1>
 
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={handleGoogle}
-                className="flex items-center justify-center gap-3 w-full px-4 py-3 rounded-xl bg-neutral-800 border border-neutral-700 text-neutral-200 text-sm font-medium hover:bg-neutral-700 transition-colors cursor-pointer"
-              >
-                <GoogleIcon />
-                Continue with Google
-              </button>
+        
+        <form className="auth-form" onSubmit={handleSubmit} noValidate>
 
-              <div className="flex items-center gap-3 my-1">
-                <span className="flex-1 h-px bg-neutral-800" />
-                <span className="text-xs text-neutral-600">or</span>
-                <span className="flex-1 h-px bg-neutral-800" />
+          
+          {!isLogin && (
+            <>
+              
+              <div className="field">
+                <input
+                  className="field-input"
+                  type="text"
+                  placeholder="Full name"
+                  required
+                  autoComplete="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
               </div>
 
-              <button
-                onClick={() => setTab("email")}
-                className="flex items-center justify-center gap-3 w-full px-4 py-3 rounded-xl border border-neutral-800 text-neutral-500 text-sm font-medium hover:border-neutral-700 hover:text-neutral-400 transition-colors cursor-pointer"
-              >
-                <EmailIcon />
-                Continue with Email
-              </button>
-            </div>
-          </div>
-        )}
-
-        {tab === "email" && (
-          <div>
-            <button
-              onClick={() => { setTab("options"); setError(""); }}
-              className="text-xs text-neutral-600 hover:text-neutral-400 transition-colors mb-6 cursor-pointer"
-            >
-              ← Back
-            </button>
-
-            <h1 className="text-2xl font-bold text-neutral-100 tracking-tight mb-1">
-              {isLogin ? "Sign in" : "Create account"}
-            </h1>
-            <p className="text-sm text-neutral-500 mb-8">
-              {isLogin ? "Enter your credentials" : "Fill in your details"}
-            </p>
-
-            <form onSubmit={handleEmail} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-neutral-500 uppercase tracking-widest">
-                  Email
-                </label>
+              
+              <div className="field">
                 <input
+                  className="field-input"
                   type="email"
+                  placeholder="Email address"
                   required
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-sm text-neutral-200 placeholder:text-neutral-600 outline-none focus:border-neutral-500 transition-colors"
+                  autoComplete="email"
+                  value={signupEmail}
+                  onChange={(e) => setSignupEmail(e.target.value)}
                 />
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-neutral-500 uppercase tracking-widest">
-                  Password
-                </label>
+              
+              <div className="field">
                 <input
-                  type="password"
+                  className="field-input"
+                  type={showSignupPw ? "text" : "password"}
+                  placeholder="Password"
                   required
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-sm text-neutral-200 placeholder:text-neutral-600 outline-none focus:border-neutral-500 transition-colors"
+                  autoComplete="new-password"
+                  value={signupPassword}
+                  onChange={(e) => setSignupPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="pw-toggle"
+                  onClick={() => setShowSignupPw((v) => !v)}
+                  aria-label={showSignupPw ? "Hide password" : "Show password"}
+                >
+                  {showSignupPw ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+              </div>
+
+              
+              <div className="field">
+                <input
+                  className="field-input"
+                  type={showConfirmPw ? "text" : "password"}
+                  placeholder="Confirm password"
+                  required
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="pw-toggle"
+                  onClick={() => setShowConfirmPw((v) => !v)}
+                  aria-label={showConfirmPw ? "Hide password" : "Show password"}
+                >
+                  {showConfirmPw ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+              </div>
+
+              
+              <div className="field">
+                <div className="select-wrapper">
+                  <select
+                    className={`gender-select${!gender ? " unselected" : ""}`}
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="non-binary">Non-binary</option>
+                    <option value="prefer-not-to-say">Prefer not to say</option>
+                  </select>
+                  <span className="select-arrow">
+                    <ChevronDownIcon />
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
+
+
+          {isLogin && (
+            <>
+              <div className="field">
+                <input
+                  className="field-input"
+                  type="email"
+                  placeholder="Email address"
+                  required
+                  autoComplete="email"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
                 />
               </div>
 
-              {error && <p className="text-red-400 text-xs">{error}</p>}
+              <div className="field">
+                <input
+                  className="field-input"
+                  type={showLoginPw ? "text" : "password"}
+                  placeholder="Password"
+                  required
+                  autoComplete="current-password"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="pw-toggle"
+                  onClick={() => setShowLoginPw((v) => !v)}
+                  aria-label={showLoginPw ? "Hide password" : "Show password"}
+                >
+                  {showLoginPw ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+              </div>
+            </>
+          )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-neutral-100 text-neutral-900 font-semibold text-sm py-3 rounded-xl hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-1 cursor-pointer"
-              >
-                {loading ? "Please wait..." : isLogin ? "Sign in" : "Create account"}
-              </button>
-            </form>
+          {/* Error */}
+          {error && <p className="error-msg" role="alert">{error}</p>}
 
-            <p className="text-center text-xs text-neutral-600 mt-6">
-              {isLogin ? "Don't have an account? " : "Already have an account? "}
-              <button
-                onClick={() => { setIsLogin(!isLogin); setError(""); }}
-                className="text-neutral-300 underline underline-offset-2 hover:text-white transition-colors cursor-pointer"
-              >
-                {isLogin ? "Sign up" : "Sign in"}
-              </button>
-            </p>
-          </div>
-        )}
+         
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? "Please wait…" : isLogin ? "Log In" : "Create Account"}
+          </button>
+        </form>
+
+        
+        <button className="switch-link" onClick={switchMode} type="button">
+          {isLogin
+            ? "Don't have an account? Sign up"
+            : "Already have an account? Log in"}
+        </button>
+
+        
+        {isLogin ? (
+                        <p className="legal-text">
+                By logging in, it means that you have read and agreed to ragimart's{" "}
+                <a href="#">Terms of Service</a> and{" "}
+                <a href="#">Privacy Policy</a>.
+              </p>
+        ) : (
+              <p className="legal-text">
+                By creating an account, it means that you have read and agreed to ragimart's{" "}
+                <a href="#">Terms of Service</a> and{" "}
+                <a href="#">Privacy Policy</a>.
+              </p>
+          )}
+
+        
+        <p className="or-divider">or</p>
+
+        
+        <button className="btn-social" onClick={handleGoogle} type="button">
+          <GoogleIcon />
+          Continue with Google
+        </button>
+
       </div>
     </main>
   );
 }
 
+
 function GoogleIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" className="shrink-0">
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0 }}>
       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
       <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
       <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
@@ -188,11 +305,29 @@ function GoogleIcon() {
   );
 }
 
-function EmailIcon() {
+function EyeIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0">
-      <rect x="2" y="4" width="20" height="16" rx="2" />
-      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function EyeOffIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <polyline points="6 9 12 15 18 9" />
     </svg>
   );
 }
