@@ -18,8 +18,25 @@ main {
     width: 100%;
     background: #fff;
     display: flex;
-    align-items: flex-start;
-    justify-content: center;
+    flex-direction: column;
+}
+
+header {
+    width: 100%;
+    display: none;
+    max-width: 1200px;
+    padding: 10px 0px;
+    margin: 0 auto;
+}
+
+.full-logo {
+    width: 170px;
+    height: auto;
+    object-fit: contain;
+}
+
+.header-spacer {
+    flex-grow: 1;
 }
 
 .auth-container {
@@ -29,6 +46,12 @@ main {
 }
 
 /* ── BRAND ── */
+.short-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
 .brand {
     display: flex;
     align-items: center;
@@ -37,23 +60,17 @@ main {
 }
 
 .brand-icon {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     border-radius: 8px;
-    background: #111;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    font-weight: 700;
-    font-size: 18px;
-    letter-spacing: -1px;
-    flex-shrink: 0;
-    font-family: 'Inter', sans-serif;
+    background-color: #e7e7e7;
 }
 
 .brand-name {
-    font-size: 22px;
+    font-size: 26px;
     font-weight: 700;
     color: #111;
     letter-spacing: -0.3px;
@@ -281,6 +298,10 @@ main {
     margin-bottom: 12px;
 }
 
+.auth-hero {
+    display: none;
+}
+
 /* ── DESKTOP: centered card on gray bg ── */
 @media (min-width: 600px) {
     .auth-page {
@@ -298,5 +319,64 @@ main {
 
     .auth-heading {
         font-size: 30px;
+    }
+}
+
+
+/* ── DESKTOP SPLIT LAYOUT ── */
+@media (min-width: 1024px) {
+
+    .auth-page {
+        background: linear-gradient(135deg, #e9d6ff, #cde7f3);
+        align-items: center;
+        height: 100vh;
+    }
+
+    .auth-grid-container {
+        height: 84%;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    header {
+        display: flex;
+    }
+
+    .auth-layout {
+        display: grid;
+        grid-template-columns: 1fr 410px;
+        align-items: center;
+        width: 100%;
+        gap: 60px;
+    }
+
+    /* HERO SIDE */
+    .auth-hero {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .auth-hero img {
+        width: 100%;
+        max-width: 660px;
+        height: auto;
+        object-fit: contain;
+        user-select: none;
+        pointer-events: none;
+    }
+
+    /* CARD SIDE */
+    .auth-container {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        padding: 40px 36px;
+        margin: 0;
+        max-width: 420px;
     }
 }

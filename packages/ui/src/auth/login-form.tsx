@@ -25,6 +25,11 @@ type Props = {
 };
 
 
+const shortLogoUrl = "https://pub-a7c50b55510e428caec8639a3dd44e97.r2.dev/ragi-short.webp";
+const fullLogoUrl = "https://pub-a7c50b55510e428caec8639a3dd44e97.r2.dev/ragi-full.webp";
+const heroImageUrl = "https://pub-a7c50b55510e428caec8639a3dd44e97.r2.dev/login-hero-image.webp";
+
+
 export default function LoginPage({ authClient, appUrl, onSuccess }: Props) {
   const [isLogin, setIsLogin] = useState(true);
 
@@ -100,12 +105,27 @@ export default function LoginPage({ authClient, appUrl, onSuccess }: Props) {
 
   return (
     <main className="auth-page">
-      <div className="auth-container">
+      <header>
+        <div className="full-logo-container">
+          <img src={fullLogoUrl} alt="Logo" className="full-logo" />
+        </div>
+        <div className="header-spacer"></div>
+      </header>
+
+      <div className="auth-grid-container">
+  <div className="auth-layout">
+    <div className="auth-hero">
+      <img src={heroImageUrl} alt="hero" />
+    </div>
+
+    <div className="auth-container">
 
         
         <div className="brand">
           
-          <div className="brand-icon">R</div>
+          <div className="brand-icon">
+            <img src={shortLogoUrl} alt="Logo" className="short-logo" />
+          </div>
           <span className="brand-name">ragimart</span>
         </div>
 
@@ -288,6 +308,8 @@ export default function LoginPage({ authClient, appUrl, onSuccess }: Props) {
           Continue with Google
         </button>
 
+      </div>
+      </div>
       </div>
     </main>
   );
