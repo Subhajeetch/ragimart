@@ -18,7 +18,7 @@ type AuthClient = {
       gender?: string;
     }) => Promise<{ error?: { message?: string } | null }>;
   };
-  forgetPassword: (opts: {
+  requestPasswordReset: (opts: {
     email: string;
     redirectTo: string;
   }) => Promise<{ error?: { message?: string } | null }>;
@@ -156,7 +156,7 @@ export default function LoginForm({ authClient, appUrl, onSuccess }: Props) {
 
     setLoading(true);
     try {
-      const res = await authClient.forgetPassword({
+      const res = await authClient.requestPasswordReset({
         email: forgotEmail,
         redirectTo: `${APP_URL}/reset-password`,
       });

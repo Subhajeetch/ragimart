@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { createAuth } from "@repo/auth/server";
 import { createDb } from "@repo/db";
+import sendResetPassEmail from "@/utils/sendResetPassEmail";
 
 interface Env {
   DB: D1Database;
@@ -25,16 +26,19 @@ app.use("*", async (c, next) => {
   })(c, next);
 });
 
-app.on(["GET", "POST"], "/api/auth/**", (c) => {
+app.all("/api/auth/*", (c) => {
   const db = createDb(c.env.DB);
-  const auth = createAuth(db, {
-    GOOGLE_CLIENT_ID: c.env.GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET: c.env.GOOGLE_CLIENT_SECRET,
-    NODE_ENV: c.env.NODE_ENV,
-    API_URL: c.env.API_URL,
-    ORIGINS: c.env.ORIGINS,
-    DOMAIN: c.env.DOMAIN,
-  });
+  const auth = createAuth(db,
+    {
+      GOOGLE_CLIENT_ID: c.env.GOOGLE_CLIENT_ID,
+      GOOGLE_CLIENT_SECRET: c.env.GOOGLE_CLIENT_SECRET,
+      NODE_ENV: c.env.NODE_ENV,
+      API_URL: c.env.API_URL,
+      ORIGINS: c.env.ORIGINS,
+      DOMAIN: c.env.DOMAIN,
+    },
+    sendResetPassEmail
+  );
   return auth.handler(c.req.raw);
 });
 
