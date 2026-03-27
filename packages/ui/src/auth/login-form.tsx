@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import "../styles/login-form.css";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type AuthClient = {
   signIn: {
@@ -14,9 +15,16 @@ type AuthClient = {
       email: string;
       password: string;
       name: string;
+      gender?: string;
     }) => Promise<{ error?: { message?: string } | null }>;
   };
+  forgetPassword: (opts: {
+    email: string;
+    redirectTo: string;
+  }) => Promise<{ error?: { message?: string } | null }>;
 };
+
+type Mode = "login" | "signup" | "forgot";
 
 type Props = {
   authClient: AuthClient;
@@ -24,46 +32,80 @@ type Props = {
   onSuccess: () => void;
 };
 
+// ─── Password validation ──────────────────────────────────────────────────────
 
-const shortLogoUrl = "https://pub-a7c50b55510e428caec8639a3dd44e97.r2.dev/ragi-short.webp";
-const fullLogoUrl = "https://pub-a7c50b55510e428caec8639a3dd44e97.r2.dev/ragi-full.webp";
-const heroImageUrl = "https://pub-a7c50b55510e428caec8639a3dd44e97.r2.dev/login-hero-image.webp";
+type PasswordCheck = { label: string; pass: boolean };
 
+function getPasswordChecks(password: string): PasswordCheck[] {
+  return [
+    { label: "At least 8 characters",    pass: password.length >= 8 },
+    { label: "One uppercase letter",      pass: /[A-Z]/.test(password) },
+    { label: "One lowercase letter",      pass: /[a-z]/.test(password) },
+    { label: "One number",               pass: /[0-9]/.test(password) },
+    { label: "One special character",    pass: /[^A-Za-z0-9]/.test(password) },
+  ];
+}
 
-export default function LoginPage({ authClient, appUrl, onSuccess }: Props) {
-  const [isLogin, setIsLogin] = useState(true);
+function getStrength(password: string): 0 | 1 | 2 | 3 {
+  if (!password) return 0;
+  const passed = getPasswordChecks(password).filter(c => c.pass).length;
+  if (passed <= 2) return 1;
+  if (passed <= 4) return 2;
+  return 3;
+}
 
+const strengthLabel = ["", "Weak", "Good", "Strong"] as const;
+const strengthClass = ["", "weak", "good", "strong"] as const;
 
-  const [name, setName] = useState("");
-  const [signupEmail, setSignupEmail] = useState("");
-  const [signupPassword, setSignupPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [gender, setGender] = useState("");
-  const [showSignupPw, setShowSignupPw] = useState(false);
-  const [showConfirmPw, setShowConfirmPw] = useState(false);
+// ─── Component ────────────────────────────────────────────────────────────────
 
+const shortLogoUrl  = "https://pub-a7c50b55510e428caec8639a3dd44e97.r2.dev/ragi-short.webp";
+const fullLogoUrl   = "https://pub-a7c50b55510e428caec8639a3dd44e97.r2.dev/ragi-full.webp";
+const heroImageUrl  = "https://pub-a7c50b55510e428caec8639a3dd44e97.r2.dev/login-hero-image.webp";
 
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [showLoginPw, setShowLoginPw] = useState(false);
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
+export default function LoginForm({ authClient, appUrl, onSuccess }: Props) {
   const APP_URL = appUrl ?? "http://localhost:8000";
 
+  const [mode, setMode] = useState<Mode>("login");
 
-  function switchMode() {
-    setIsLogin((v) => !v);
+  // ── Signup fields ──
+  const [name, setName]                     = useState("");
+  const [gender, setGender]                 = useState("");
+  const [signupEmail, setSignupEmail]       = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showSignupPw, setShowSignupPw]     = useState(false);
+  const [showConfirmPw, setShowConfirmPw]   = useState(false);
+
+  // ── Login fields ──
+  const [loginEmail, setLoginEmail]         = useState("");
+  const [loginPassword, setLoginPassword]   = useState("");
+  const [showLoginPw, setShowLoginPw]       = useState(false);
+
+  // ── Forgot password fields ──
+  const [forgotEmail, setForgotEmail]       = useState("");
+  const [forgotSent, setForgotSent]         = useState(false);
+
+  // ── Shared ──
+  const [loading, setLoading]               = useState(false);
+  const [error, setError]                   = useState("");
+
+  // ── Password strength ──
+  const passwordChecks = useMemo(() => getPasswordChecks(signupPassword), [signupPassword]);
+  const strength       = useMemo(() => getStrength(signupPassword), [signupPassword]);
+  const showChecks     = mode === "signup" && signupPassword.length > 0;
+
+  // ── Helpers ──
+  function switchMode(next: Mode) {
+    setMode(next);
     setError("");
   }
 
+  // ── Handlers ──
   async function handleGoogle() {
+    setError("");
     try {
-      await authClient.signIn.social({
-        provider: "google",
-        callbackURL: `${APP_URL}/home`,
-      });
+      await authClient.signIn.social({ provider: "google", callbackURL: `${APP_URL}/home` });
     } catch {
       setError("Google sign-in failed. Please try again.");
     }
@@ -73,24 +115,29 @@ export default function LoginPage({ authClient, appUrl, onSuccess }: Props) {
     e.preventDefault();
     setError("");
 
-    if (!isLogin) {
-      if (!name.trim()) return setError("Please enter your name.");
-      if (!gender) return setError("Please select your gender.");
-      if (signupPassword.length < 8) return setError("Password must be at least 8 characters.");
+    if (mode === "signup") {
+      if (!name.trim())        return setError("Please enter your name.");
+      if (!gender)             return setError("Please select your gender.");
+
+      const allPassed = passwordChecks.every(c => c.pass);
+      if (!allPassed)          return setError("Please meet all password requirements.");
       if (signupPassword !== confirmPassword) return setError("Passwords do not match.");
     }
 
     setLoading(true);
     try {
-      if (isLogin) {
+      if (mode === "login") {
+        if (!loginEmail || !loginPassword) return setError("Please fill in all fields.");
         const res = await authClient.signIn.email({ email: loginEmail, password: loginPassword });
         if (res?.error) setError(res.error.message ?? "Login failed. Please try again.");
         else onSuccess();
-      } else {
+
+      } else if (mode === "signup") {
         const res = await authClient.signUp.email({
           email: signupEmail,
           password: signupPassword,
           name: name.trim(),
+          gender,
         });
         if (res?.error) setError(res.error.message ?? "Sign-up failed. Please try again.");
         else onSuccess();
@@ -102,6 +149,27 @@ export default function LoginPage({ authClient, appUrl, onSuccess }: Props) {
     }
   }
 
+  async function handleForgot(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError("");
+    if (!forgotEmail) return setError("Please enter your email address.");
+
+    setLoading(true);
+    try {
+      const res = await authClient.forgetPassword({
+        email: forgotEmail,
+        redirectTo: `${APP_URL}/reset-password`,
+      });
+      if (res?.error) setError(res.error.message ?? "Failed to send reset email.");
+      else setForgotSent(true);
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
     <main className="auth-page">
@@ -109,212 +177,280 @@ export default function LoginPage({ authClient, appUrl, onSuccess }: Props) {
         <div className="full-logo-container">
           <img src={fullLogoUrl} alt="Logo" className="full-logo" />
         </div>
-        <div className="header-spacer"></div>
+        <div className="header-spacer" />
       </header>
 
       <div className="auth-grid-container">
-  <div className="auth-layout">
-    <div className="auth-hero">
-      <img src={heroImageUrl} alt="hero" />
-    </div>
-
-    <div className="auth-container">
-
-        
-        <div className="brand">
-          
-          <div className="brand-icon">
-            <img src={shortLogoUrl} alt="Logo" className="short-logo" />
+        <div className="auth-layout">
+          <div className="auth-hero">
+            <img src={heroImageUrl} alt="hero" />
           </div>
-          <span className="brand-name">ragimart</span>
-        </div>
 
-        
-        <h1 className="auth-heading">
-          {isLogin ? "Log In" : "Create Account"}
-        </h1>
-
-        
-        <form className="auth-form" onSubmit={handleSubmit} noValidate>
-
-          
-          {!isLogin && (
-            <>
-              
-              <div className="field">
-                <input
-                  className="field-input"
-                  type="text"
-                  placeholder="Full name"
-                  required
-                  autoComplete="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
+          <div className="auth-container">
+            {/* Brand */}
+            <div className="brand">
+              <div className="brand-icon">
+                <img src={shortLogoUrl} alt="Logo" className="short-logo" />
               </div>
+              <span className="brand-name">ragimart</span>
+            </div>
 
-              
-              <div className="field">
-                <input
-                  className="field-input"
-                  type="email"
-                  placeholder="Email address"
-                  required
-                  autoComplete="email"
-                  value={signupEmail}
-                  onChange={(e) => setSignupEmail(e.target.value)}
-                />
-              </div>
+            {/* ── FORGOT PASSWORD ── */}
+            {mode === "forgot" && (
+              <>
+                <h1 className="auth-heading">Reset password</h1>
 
-              
-              <div className="field">
-                <input
-                  className="field-input"
-                  type={showSignupPw ? "text" : "password"}
-                  placeholder="Password"
-                  required
-                  autoComplete="new-password"
-                  value={signupPassword}
-                  onChange={(e) => setSignupPassword(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="pw-toggle"
-                  onClick={() => setShowSignupPw((v) => !v)}
-                  aria-label={showSignupPw ? "Hide password" : "Show password"}
-                >
-                  {showSignupPw ? <EyeOffIcon /> : <EyeIcon />}
+                {forgotSent ? (
+                  <div className="forgot-success">
+                    <p className="forgot-success-title">Check your inbox</p>
+                    <p className="forgot-success-body">
+                      We sent a password reset link to <strong>{forgotEmail}</strong>. It expires in 1 hour.
+                    </p>
+                    <button className="switch-link" type="button" onClick={() => { setForgotSent(false); switchMode("login"); }}>
+                      Back to log in
+                    </button>
+                  </div>
+                ) : (
+                  <form className="auth-form" onSubmit={handleForgot} noValidate>
+                    <p className="forgot-hint">
+                      Enter the email address associated with your account and we'll send you a link to reset your password.
+                    </p>
+
+                    <div className="field">
+                      <input
+                        className="field-input"
+                        type="email"
+                        placeholder="Email address"
+                        required
+                        autoComplete="email"
+                        value={forgotEmail}
+                        onChange={e => setForgotEmail(e.target.value)}
+                      />
+                    </div>
+
+                    {error && <p className="error-msg" role="alert">{error}</p>}
+
+                    <button type="submit" className="btn-primary" disabled={loading}>
+                      {loading ? "Sending…" : "Send reset link"}
+                    </button>
+
+                    <button className="switch-link" type="button" onClick={() => switchMode("login")}>
+                      Back to log in
+                    </button>
+                  </form>
+                )}
+              </>
+            )}
+
+            {/* ── LOGIN / SIGNUP ── */}
+            {mode !== "forgot" && (
+              <>
+                <h1 className="auth-heading">
+                  {mode === "login" ? "Log In" : "Create Account"}
+                </h1>
+
+                <form className="auth-form" onSubmit={handleSubmit} noValidate>
+
+                  {/* ── SIGNUP FIELDS ── */}
+                  {mode === "signup" && (
+                    <>
+                      <div className="field">
+                        <input
+                          className="field-input"
+                          type="text"
+                          placeholder="Full name"
+                          required
+                          autoComplete="name"
+                          value={name}
+                          onChange={e => setName(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="field">
+                        <input
+                          className="field-input"
+                          type="email"
+                          placeholder="Email address"
+                          required
+                          autoComplete="email"
+                          value={signupEmail}
+                          onChange={e => setSignupEmail(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="field">
+                        <input
+                          className="field-input"
+                          type={showSignupPw ? "text" : "password"}
+                          placeholder="Password"
+                          required
+                          autoComplete="new-password"
+                          value={signupPassword}
+                          onChange={e => setSignupPassword(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className="pw-toggle"
+                          onClick={() => setShowSignupPw(v => !v)}
+                          aria-label={showSignupPw ? "Hide password" : "Show password"}
+                        >
+                          {showSignupPw ? <EyeOffIcon /> : <EyeIcon />}
+                        </button>
+                      </div>
+
+                      {/* Password strength */}
+                      {showChecks && (
+                        <div className="pw-strength-wrap">
+                          <div className="pw-strength-bars">
+                            {[1, 2, 3].map(level => (
+                              <div
+                                key={level}
+                                className={`pw-strength-bar ${strength >= level ? strengthClass[strength] : ""}`}
+                              />
+                            ))}
+                          </div>
+                          <span className={`pw-strength-label ${strengthClass[strength]}`}>
+                            {strengthLabel[strength]}
+                          </span>
+                        </div>
+                      )}
+
+                      {showChecks && (
+                        <ul className="pw-checks">
+                          {passwordChecks.map(check => (
+                            <li key={check.label} className={`pw-check ${check.pass ? "pass" : ""}`}>
+                              {check.pass ? <CheckIcon /> : <DotIcon />}
+                              {check.label}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+
+                      <div className="field">
+                        <input
+                          className="field-input"
+                          type={showConfirmPw ? "text" : "password"}
+                          placeholder="Confirm password"
+                          required
+                          autoComplete="new-password"
+                          value={confirmPassword}
+                          onChange={e => setConfirmPassword(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className="pw-toggle"
+                          onClick={() => setShowConfirmPw(v => !v)}
+                          aria-label={showConfirmPw ? "Hide password" : "Show password"}
+                        >
+                          {showConfirmPw ? <EyeOffIcon /> : <EyeIcon />}
+                        </button>
+                      </div>
+
+                      <div className="field">
+                        <div className="select-wrapper">
+                          <select
+                            className={`gender-select${!gender ? " unselected" : ""}`}
+                            value={gender}
+                            onChange={e => setGender(e.target.value)}
+                            required
+                          >
+                            <option value="" disabled>Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="non-binary">Non-binary</option>
+                            <option value="prefer-not-to-say">Prefer not to say</option>
+                          </select>
+                          <span className="select-arrow"><ChevronDownIcon /></span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* ── LOGIN FIELDS ── */}
+                  {mode === "login" && (
+                    <>
+                      <div className="field">
+                        <input
+                          className="field-input"
+                          type="email"
+                          placeholder="Email address"
+                          required
+                          autoComplete="email"
+                          value={loginEmail}
+                          onChange={e => setLoginEmail(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="field">
+                        <input
+                          className="field-input"
+                          type={showLoginPw ? "text" : "password"}
+                          placeholder="Password"
+                          required
+                          autoComplete="current-password"
+                          value={loginPassword}
+                          onChange={e => setLoginPassword(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className="pw-toggle"
+                          onClick={() => setShowLoginPw(v => !v)}
+                          aria-label={showLoginPw ? "Hide password" : "Show password"}
+                        >
+                          {showLoginPw ? <EyeOffIcon /> : <EyeIcon />}
+                        </button>
+                      </div>
+
+                      <div className="forgot-password-container">
+                        <button
+                          className="forgot-password-text"
+                          type="button"
+                          onClick={() => switchMode("forgot")}
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  {error && <p className="error-msg" role="alert">{error}</p>}
+
+                  <button type="submit" className="btn-primary" disabled={loading}>
+                    {loading ? "Please wait…" : mode === "login" ? "Log In" : "Create Account"}
+                  </button>
+                </form>
+
+                <button className="switch-link" onClick={() => switchMode(mode === "login" ? "signup" : "login")} type="button">
+                  {mode === "login"
+                    ? "Don't have an account? Sign up"
+                    : "Already have an account? Log in"}
                 </button>
-              </div>
 
-              
-              <div className="field">
-                <input
-                  className="field-input"
-                  type={showConfirmPw ? "text" : "password"}
-                  placeholder="Confirm password"
-                  required
-                  autoComplete="new-password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="pw-toggle"
-                  onClick={() => setShowConfirmPw((v) => !v)}
-                  aria-label={showConfirmPw ? "Hide password" : "Show password"}
-                >
-                  {showConfirmPw ? <EyeOffIcon /> : <EyeIcon />}
-                </button>
-              </div>
+                <p className="legal-text">
+                  By {mode === "login" ? "logging in" : "creating an account"}, you agree to ragimart's{" "}
+                  <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+                </p>
 
-              
-              <div className="field">
-                <div className="select-wrapper">
-                  <select
-                    className={`gender-select${!gender ? " unselected" : ""}`}
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
-                    required
-                  >
-                    <option value="" disabled>Gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="non-binary">Non-binary</option>
-                    <option value="prefer-not-to-say">Prefer not to say</option>
-                  </select>
-                  <span className="select-arrow">
-                    <ChevronDownIcon />
-                  </span>
+                <div className="or-divider-container">
+                  <div className="or-divider-line" />
+                  <p className="or-divider-text">or</p>
+                  <div className="or-divider-line" />
                 </div>
-              </div>
-            </>
-          )}
 
-
-          {isLogin && (
-            <>
-              <div className="field">
-                <input
-                  className="field-input"
-                  type="email"
-                  placeholder="Email address"
-                  required
-                  autoComplete="email"
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                />
-              </div>
-
-              <div className="field">
-                <input
-                  className="field-input"
-                  type={showLoginPw ? "text" : "password"}
-                  placeholder="Password"
-                  required
-                  autoComplete="current-password"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="pw-toggle"
-                  onClick={() => setShowLoginPw((v) => !v)}
-                  aria-label={showLoginPw ? "Hide password" : "Show password"}
-                >
-                  {showLoginPw ? <EyeOffIcon /> : <EyeIcon />}
+                <button className="btn-social" onClick={handleGoogle} type="button">
+                  <GoogleIcon />
+                  Continue with Google
                 </button>
-              </div>
-            </>
-          )}
-
-          {/* Error */}
-          {error && <p className="error-msg" role="alert">{error}</p>}
-
-         
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? "Please wait…" : isLogin ? "Log In" : "Create Account"}
-          </button>
-        </form>
-
-        
-        <button className="switch-link" onClick={switchMode} type="button">
-          {isLogin
-            ? "Don't have an account? Sign up"
-            : "Already have an account? Log in"}
-        </button>
-
-        
-        {isLogin ? (
-                        <p className="legal-text">
-                By logging in, it means that you have read and agreed to ragimart's{" "}
-                <a href="#">Terms of Service</a> and{" "}
-                <a href="#">Privacy Policy</a>.
-              </p>
-        ) : (
-              <p className="legal-text">
-                By creating an account, it means that you have read and agreed to ragimart's{" "}
-                <a href="#">Terms of Service</a> and{" "}
-                <a href="#">Privacy Policy</a>.
-              </p>
-          )}
-
-        
-        <p className="or-divider">or</p>
-
-        
-        <button className="btn-social" onClick={handleGoogle} type="button">
-          <GoogleIcon />
-          Continue with Google
-        </button>
-
-      </div>
-      </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </main>
   );
 }
 
+// ─── Icons ────────────────────────────────────────────────────────────────────
 
 function GoogleIcon() {
   return (
@@ -350,6 +486,22 @@ function ChevronDownIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
       <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function DotIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <circle cx="12" cy="12" r="4" fill="currentColor" />
     </svg>
   );
 }

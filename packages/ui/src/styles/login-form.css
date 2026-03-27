@@ -78,11 +78,11 @@ header {
 
 /* ── HEADING ── */
 .auth-heading {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 700;
     color: #111;
     letter-spacing: -0.5px;
-    margin-bottom: 32px;
+    margin-bottom: 30px;
     line-height: 1.2;
 }
 
@@ -95,7 +95,7 @@ header {
 /* ── UNDERLINE INPUT FIELD ── */
 .field {
     position: relative;
-    margin-bottom: 24px;
+    margin-bottom: 18px;
 }
 
 .field-input {
@@ -104,9 +104,8 @@ header {
     border: none;
     border-bottom: 1.5px solid #ccc;
     border-radius: 0;
-    padding: 10px 40px 10px 0;
+    padding: 10px 40px 6px 0;
     font-size: 16px;
-    font-family: 'Inter', sans-serif;
     color: #111;
     outline: none;
     transition: border-color 0.18s ease;
@@ -122,7 +121,7 @@ header {
     border-bottom-color: #555;
 }
 
-/* ── GENDER SELECT (underline style matching inputs) ── */
+/* ── GENDER SELECT ── */
 .select-wrapper {
     position: relative;
 }
@@ -135,7 +134,6 @@ header {
     border-radius: 0;
     padding: 10px 40px 10px 0;
     font-size: 16px;
-    font-family: 'Inter', sans-serif;
     color: #111;
     outline: none;
     cursor: pointer;
@@ -188,17 +186,93 @@ header {
     color: #555;
 }
 
-/* ── PRIMARY BUTTON (blue pill) ── */
+/* ── PASSWORD STRENGTH ── */
+.pw-strength-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    margin-top: -6px;
+}
+
+.pw-strength-bars {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+}
+
+.pw-strength-bar {
+    height: 4px;
+    flex: 1;
+    border-radius: 100px;
+    background: #e5e5e5;
+    transition: background 0.25s ease;
+}
+
+.pw-strength-bar.weak {
+    background: #ef4444;
+}
+
+.pw-strength-bar.good {
+    background: #f59e0b;
+}
+
+.pw-strength-bar.strong {
+    background: #22c55e;
+}
+
+.pw-strength-label {
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 44px;
+    text-align: right;
+}
+
+.pw-strength-label.weak {
+    color: #ef4444;
+}
+
+.pw-strength-label.good {
+    color: #f59e0b;
+}
+
+.pw-strength-label.strong {
+    color: #22c55e;
+}
+
+/* ── PASSWORD CHECKLIST ── */
+.pw-checks {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 16px;
+    padding: 0;
+}
+
+.pw-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #aaa;
+    transition: color 0.2s ease;
+}
+
+.pw-check.pass {
+    color: #22c55e;
+}
+
+/* ── PRIMARY BUTTON ── */
 .btn-primary {
     width: 100%;
     background: #2d7ff9;
     color: #fff;
     border: none;
     border-radius: 100px;
-    padding: 17px 20px;
+    padding: 12px 20px;
     font-size: 17px;
     font-weight: 600;
-    font-family: 'Inter', sans-serif;
     cursor: pointer;
     margin-top: 16px;
     margin-bottom: 20px;
@@ -229,12 +303,57 @@ header {
     cursor: pointer;
     background: none;
     border: none;
-    font-family: 'Inter', sans-serif;
     width: 100%;
 }
 
 .switch-link:hover {
     text-decoration: underline;
+}
+
+/* ── FORGOT PASSWORD ── */
+.forgot-password-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 18px;
+}
+
+.forgot-password-text {
+    font-size: 14px;
+    color: #2d7ff9;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.forgot-password-text:hover {
+    text-decoration: underline;
+}
+
+.forgot-hint {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.forgot-success {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.forgot-success-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111;
+}
+
+.forgot-success-body {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 8px;
 }
 
 /* ── LEGAL TEXT ── */
@@ -255,14 +374,26 @@ header {
 }
 
 /* ── OR DIVIDER ── */
-.or-divider {
-    text-align: center;
-    font-size: 14px;
-    color: #888;
+.or-divider-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     margin-bottom: 20px;
 }
 
-/* ── SOCIAL BUTTON (outlined pill, black border) ── */
+.or-divider-line {
+    flex-grow: 1;
+    height: 1px;
+    background: #ddd;
+}
+
+.or-divider-text {
+    font-size: 14px;
+    color: #888;
+    font-weight: 500;
+}
+
+/* ── SOCIAL BUTTON ── */
 .btn-social {
     width: 100%;
     display: flex;
@@ -272,10 +403,9 @@ header {
     background: #fff;
     border: 1.8px solid #111;
     border-radius: 100px;
-    padding: 15px 20px;
+    padding: 12px 20px;
     font-size: 16px;
     font-weight: 600;
-    font-family: 'Inter', sans-serif;
     color: #111;
     cursor: pointer;
     margin-bottom: 12px;
@@ -302,7 +432,7 @@ header {
     display: none;
 }
 
-/* ── DESKTOP: centered card on gray bg ── */
+/* ── TABLET: centered card ── */
 @media (min-width: 600px) {
     .auth-page {
         background: #f0f1f3;
@@ -322,12 +452,10 @@ header {
     }
 }
 
-
 /* ── DESKTOP SPLIT LAYOUT ── */
 @media (min-width: 1024px) {
-
     .auth-page {
-        background: linear-gradient(135deg, #e9d6ff, #cde7f3);
+        background: linear-gradient(135deg, #a5d88c, #a0dbf7, #c46aff);
         align-items: center;
         height: 100vh;
     }
@@ -354,7 +482,6 @@ header {
         gap: 60px;
     }
 
-    /* HERO SIDE */
     .auth-hero {
         display: flex;
         justify-content: center;
@@ -370,7 +497,6 @@ header {
         pointer-events: none;
     }
 
-    /* CARD SIDE */
     .auth-container {
         background: #fff;
         border-radius: 16px;
