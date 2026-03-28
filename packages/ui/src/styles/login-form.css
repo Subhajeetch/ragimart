@@ -12,7 +12,6 @@ main {
     -webkit-font-smoothing: antialiased;
 }
 
-/* ── PAGE ── */
 .auth-page {
     min-height: 100vh;
     width: 100%;
@@ -45,7 +44,6 @@ header {
     padding: 40px 24px 48px;
 }
 
-/* ── BRAND ── */
 .short-logo {
     width: 40px;
     height: 40px;
@@ -76,7 +74,6 @@ header {
     letter-spacing: -0.3px;
 }
 
-/* ── HEADING ── */
 .auth-heading {
     font-size: 26px;
     font-weight: 700;
@@ -86,14 +83,17 @@ header {
     line-height: 1.2;
 }
 
-/* ── FORM ── */
 .auth-form {
     display: flex;
     flex-direction: column;
 }
 
-/* ── UNDERLINE INPUT FIELD ── */
 .field {
+    position: relative;
+    margin-bottom: 18px;
+}
+
+.field-password {
     position: relative;
     margin-bottom: 18px;
 }
@@ -121,7 +121,6 @@ header {
     border-bottom-color: #555;
 }
 
-/* ── GENDER SELECT ── */
 .select-wrapper {
     position: relative;
 }
@@ -166,7 +165,6 @@ header {
     line-height: 0;
 }
 
-/* ── EYE TOGGLE ── */
 .pw-toggle {
     position: absolute;
     right: 4px;
@@ -186,7 +184,6 @@ header {
     color: #555;
 }
 
-/* ── PASSWORD STRENGTH ── */
 .pw-strength-wrap {
     display: flex;
     align-items: center;
@@ -240,7 +237,51 @@ header {
     color: #22c55e;
 }
 
-/* ── PASSWORD CHECKLIST ── */
+.password-strength-float {
+    position: absolute;
+    width: 240px;
+    bottom: 100%;
+    right: 20px;
+    margin-bottom: 8px;
+    pointer-events: none;
+}
+
+.password-strength-float > * {
+    pointer-events: auto;
+}
+
+.pw-strength-container {
+    position: relative;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    animation: slideDown 0.2s ease-out;
+}
+
+.pw-strength-container::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    right: 12px;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 0px solid transparent;
+    border-top: 10px solid white;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.05));
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 .pw-checks {
     list-style: none;
     display: flex;
@@ -263,7 +304,6 @@ header {
     color: #22c55e;
 }
 
-/* ── PRIMARY BUTTON ── */
 .btn-primary {
     width: 100%;
     background: #2d7ff9;
@@ -292,7 +332,6 @@ header {
     cursor: not-allowed;
 }
 
-/* ── SWITCH LINK ── */
 .switch-link {
     display: block;
     text-align: center;
@@ -310,7 +349,6 @@ header {
     text-decoration: underline;
 }
 
-/* ── FORGOT PASSWORD ── */
 .forgot-password-container {
     display: flex;
     justify-content: flex-end;
@@ -356,7 +394,6 @@ header {
     margin-bottom: 8px;
 }
 
-/* ── LEGAL TEXT ── */
 .legal-text {
     font-size: 12.5px;
     color: #888;
@@ -373,7 +410,6 @@ header {
     text-decoration: underline;
 }
 
-/* ── OR DIVIDER ── */
 .or-divider-container {
     display: flex;
     align-items: center;
@@ -393,7 +429,6 @@ header {
     font-weight: 500;
 }
 
-/* ── SOCIAL BUTTON ── */
 .btn-social {
     width: 100%;
     display: flex;
@@ -420,7 +455,6 @@ header {
     transform: scale(0.985);
 }
 
-/* ── ERROR ── */
 .error-msg {
     font-size: 13px;
     color: #e53935;
@@ -432,7 +466,6 @@ header {
     display: none;
 }
 
-/* ── TABLET: centered card ── */
 @media (min-width: 600px) {
     .auth-page {
         background: #f0f1f3;
@@ -452,7 +485,6 @@ header {
     }
 }
 
-/* ── DESKTOP SPLIT LAYOUT ── */
 @media (min-width: 1024px) {
     .auth-page {
         background: linear-gradient(135deg, #a5d88c, #a0dbf7, #c46aff);

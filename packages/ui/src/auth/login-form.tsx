@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
+import PassCheck from "./pass-check";
 import "../styles/login-form.css";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 type AuthClient = {
   signIn: {
@@ -32,32 +31,6 @@ type Props = {
   onSuccess: () => void;
 };
 
-// ─── Password validation ──────────────────────────────────────────────────────
-
-type PasswordCheck = { label: string; pass: boolean };
-
-function getPasswordChecks(password: string): PasswordCheck[] {
-  return [
-    { label: "At least 8 characters",    pass: password.length >= 8 },
-    { label: "One uppercase letter",      pass: /[A-Z]/.test(password) },
-    { label: "One lowercase letter",      pass: /[a-z]/.test(password) },
-    { label: "One number",               pass: /[0-9]/.test(password) },
-    { label: "One special character",    pass: /[^A-Za-z0-9]/.test(password) },
-  ];
-}
-
-function getStrength(password: string): 0 | 1 | 2 | 3 {
-  if (!password) return 0;
-  const passed = getPasswordChecks(password).filter(c => c.pass).length;
-  if (passed <= 2) return 1;
-  if (passed <= 4) return 2;
-  return 3;
-}
-
-const strengthLabel = ["", "Weak", "Good", "Strong"] as const;
-const strengthClass = ["", "weak", "good", "strong"] as const;
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 const shortLogoUrl  = "https://pub-a7c50b55510e428caec8639a3dd44e97.r2.dev/ragi-short.webp";
 const fullLogoUrl   = "https://pub-a7c50b55510e428caec8639a3dd44e97.r2.dev/ragi-full.webp";
@@ -68,7 +41,7 @@ export default function LoginForm({ authClient, appUrl, onSuccess }: Props) {
 
   const [mode, setMode] = useState<Mode>("login");
 
-  // ── Signup fields ──
+  // signup fields
   const [name, setName]                     = useState("");
   const [gender, setGender]                 = useState("");
   const [signupEmail, setSignupEmail]       = useState("");
@@ -76,32 +49,30 @@ export default function LoginForm({ authClient, appUrl, onSuccess }: Props) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showSignupPw, setShowSignupPw]     = useState(false);
   const [showConfirmPw, setShowConfirmPw]   = useState(false);
+  const [signupPasswordFocused, setSignupPasswordFocused] = useState(false);
 
-  // ── Login fields ──
+  //login fields
   const [loginEmail, setLoginEmail]         = useState("");
   const [loginPassword, setLoginPassword]   = useState("");
   const [showLoginPw, setShowLoginPw]       = useState(false);
 
-  // ── Forgot password fields ──
+  //forgot password fields
   const [forgotEmail, setForgotEmail]       = useState("");
   const [forgotSent, setForgotSent]         = useState(false);
 
-  // ── Shared ──
+  //shared 
   const [loading, setLoading]               = useState(false);
   const [error, setError]                   = useState("");
 
-  // ── Password strength ──
-  const passwordChecks = useMemo(() => getPasswordChecks(signupPassword), [signupPassword]);
-  const strength       = useMemo(() => getStrength(signupPassword), [signupPassword]);
-  const showChecks     = mode === "signup" && signupPassword.length > 0;
 
-  // ── Helpers ──
+
+  //helpers
   function switchMode(next: Mode) {
     setMode(next);
     setError("");
   }
 
-  // ── Handlers ──
+  //handlers
   async function handleGoogle() {
     setError("");
     try {
@@ -119,8 +90,7 @@ export default function LoginForm({ authClient, appUrl, onSuccess }: Props) {
       if (!name.trim())        return setError("Please enter your name.");
       if (!gender)             return setError("Please select your gender.");
 
-      const allPassed = passwordChecks.every(c => c.pass);
-      if (!allPassed)          return setError("Please meet all password requirements.");
+      if (!signupPassword)     return setError("Please enter a password.");
       if (signupPassword !== confirmPassword) return setError("Passwords do not match.");
     }
 
@@ -169,7 +139,7 @@ export default function LoginForm({ authClient, appUrl, onSuccess }: Props) {
     }
   }
 
-  // ─── Render ────────────────────────────────────────────────────────────────
+  //render
 
   return (
     <main className="auth-page">
@@ -187,7 +157,7 @@ export default function LoginForm({ authClient, appUrl, onSuccess }: Props) {
           </div>
 
           <div className="auth-container">
-            {/* Brand */}
+            {/* brand */}
             <div className="brand">
               <div className="brand-icon">
                 <img src={shortLogoUrl} alt="Logo" className="short-logo" />
@@ -195,7 +165,7 @@ export default function LoginForm({ authClient, appUrl, onSuccess }: Props) {
               <span className="brand-name">ragimart</span>
             </div>
 
-            {/* ── FORGOT PASSWORD ── */}
+            {/*forgot password*/}
             {mode === "forgot" && (
               <>
                 <h1 className="auth-heading">Reset password</h1>
@@ -242,7 +212,7 @@ export default function LoginForm({ authClient, appUrl, onSuccess }: Props) {
               </>
             )}
 
-            {/* ── LOGIN / SIGNUP ── */}
+            {/* login/signup*/}
             {mode !== "forgot" && (
               <>
                 <h1 className="auth-heading">
@@ -251,7 +221,7 @@ export default function LoginForm({ authClient, appUrl, onSuccess }: Props) {
 
                 <form className="auth-form" onSubmit={handleSubmit} noValidate>
 
-                  {/* ── SIGNUP FIELDS ── */}
+                  {/*signup fields*/}
                   {mode === "signup" && (
                     <>
                       <div className="field">
@@ -278,7 +248,7 @@ export default function LoginForm({ authClient, appUrl, onSuccess }: Props) {
                         />
                       </div>
 
-                      <div className="field">
+                      <div className="field field-password">
                         <input
                           className="field-input"
                           type={showSignupPw ? "text" : "password"}
@@ -287,6 +257,8 @@ export default function LoginForm({ authClient, appUrl, onSuccess }: Props) {
                           autoComplete="new-password"
                           value={signupPassword}
                           onChange={e => setSignupPassword(e.target.value)}
+                          onFocus={() => setSignupPasswordFocused(true)}
+                          onBlur={() => setSignupPasswordFocused(false)}
                         />
                         <button
                           type="button"
@@ -296,35 +268,11 @@ export default function LoginForm({ authClient, appUrl, onSuccess }: Props) {
                         >
                           {showSignupPw ? <EyeOffIcon /> : <EyeIcon />}
                         </button>
-                      </div>
-
-                      {/* Password strength */}
-                      {showChecks && (
-                        <div className="pw-strength-wrap">
-                          <div className="pw-strength-bars">
-                            {[1, 2, 3].map(level => (
-                              <div
-                                key={level}
-                                className={`pw-strength-bar ${strength >= level ? strengthClass[strength] : ""}`}
-                              />
-                            ))}
-                          </div>
-                          <span className={`pw-strength-label ${strengthClass[strength]}`}>
-                            {strengthLabel[strength]}
-                          </span>
+                        {/* pass float */}
+                        <div className="password-strength-float">
+                          <PassCheck password={signupPassword} show={signupPasswordFocused} />
                         </div>
-                      )}
-
-                      {showChecks && (
-                        <ul className="pw-checks">
-                          {passwordChecks.map(check => (
-                            <li key={check.label} className={`pw-check ${check.pass ? "pass" : ""}`}>
-                              {check.pass ? <CheckIcon /> : <DotIcon />}
-                              {check.label}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
+                      </div>
 
                       <div className="field">
                         <input
@@ -366,7 +314,7 @@ export default function LoginForm({ authClient, appUrl, onSuccess }: Props) {
                     </>
                   )}
 
-                  {/* ── LOGIN FIELDS ── */}
+                  {/* login*/}
                   {mode === "login" && (
                     <>
                       <div className="field">
@@ -450,8 +398,7 @@ export default function LoginForm({ authClient, appUrl, onSuccess }: Props) {
   );
 }
 
-// ─── Icons ────────────────────────────────────────────────────────────────────
-
+//icons
 function GoogleIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0 }}>
@@ -490,18 +437,3 @@ function ChevronDownIcon() {
   );
 }
 
-function CheckIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true" style={{ flexShrink: 0 }}>
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-function DotIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" style={{ flexShrink: 0 }}>
-      <circle cx="12" cy="12" r="4" fill="currentColor" />
-    </svg>
-  );
-}
