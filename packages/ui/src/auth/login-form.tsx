@@ -305,8 +305,8 @@ export default function LoginForm({ authClient, appUrl, onSuccess }: Props) {
                             <option value="" disabled>Gender</option>
                             <option value="male">Male</option>
                             <option value="female">Female</option>
-                            <option value="non-binary">Non-binary</option>
-                            <option value="prefer-not-to-say">Prefer not to say</option>
+                            <option value="other">Other</option>
+                            <option value="prefer_not_to_say">Prefer not to say</option>
                           </select>
                           <span className="select-arrow"><ChevronDownIcon /></span>
                         </div>
