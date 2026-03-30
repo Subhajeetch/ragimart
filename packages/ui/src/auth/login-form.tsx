@@ -32,8 +32,8 @@ type Props = {
 };
 
 
-const shortLogoUrl  = "https://pub-a7c50b55510e428caec8639a3dd44e97.r2.dev/ragi-short.webp";
-const fullLogoUrl   = "https://pub-a7c50b55510e428caec8639a3dd44e97.r2.dev/ragi-full.webp";
+const shortLogoUrl  = "https://pub-a7c50b55510e428caec8639a3dd44e97.r2.dev/ragi-short-2.webp";
+const fullLogoUrl   = "https://pub-a7c50b55510e428caec8639a3dd44e97.r2.dev/ragi-full-2.webp";
 const heroImageUrl  = "https://pub-a7c50b55510e428caec8639a3dd44e97.r2.dev/login-hero-image.webp";
 
 export default function LoginForm({ authClient, appUrl, onSuccess }: Props) {
