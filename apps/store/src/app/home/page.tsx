@@ -3,28 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useSession, authClient } from "@/lib/auth-client";
+import { Session } from "@repo/types/session-client";
 
-// Properly typed user — extend with your custom fields from schema
-type SessionUser = {
-  id: string;
-  name: string;
-  email: string;
-  emailVerified: boolean;
-  image?: string | null;
-  role?: "customer" | "admin";
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-type Session = {
-  user: SessionUser;
-  session: {
-    id: string;
-    expiresAt: Date;
-    token: string;
-    userId: string;
-  };
-};
 
 export default function HomePage() {
   const { data, isPending } = useSession();
@@ -48,6 +28,7 @@ export default function HomePage() {
   if (!session) return null;
 
   const { user } = session;
+  //console.log("Session data:", session.user);
 
   const initials = user.name
     ? user.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
@@ -84,11 +65,13 @@ export default function HomePage() {
         <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 flex items-center gap-4 mb-4">
           <div className="relative shrink-0">
             {user.image ? (
-              <img
-                src={user.image}
-                alt={user.name}
-                className="w-16 h-16 rounded-full object-cover"
-              />
+               <>
+                <img
+                  src={user.image}
+                  alt={user.name}
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+              </>
             ) : (
               <div className="w-16 h-16 rounded-full bg-linear-to-br from-neutral-700 to-neutral-500 flex items-center justify-center text-xl font-bold text-neutral-200">
                 {initials}

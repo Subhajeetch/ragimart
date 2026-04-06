@@ -16,6 +16,7 @@
 		"@opennextjs/cloudflare": "^1.17.1",
 		"@repo/auth": "workspace:*",
 		"@repo/ui": "workspace:*",
+		"@repo/types": "workspace:*",
 		"next": "16.1.5",
 		"react": "19.1.5",
 		"react-dom": "19.1.5"

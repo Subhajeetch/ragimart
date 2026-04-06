@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useSession, authClient } from "@/lib/auth-client";
-import { Session } from "@/types/session";
+import { Session } from "@repo/types/session-client";
 
 
 export default function HomePage() {

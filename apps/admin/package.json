@@ -16,6 +16,7 @@
 		"@opennextjs/cloudflare": "^1.17.1",
 		"@repo/auth": "workspace:*",
 		"@repo/ui": "workspace:*",
+		"@repo/types": "workspace:*",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"lucide-react": "^1.7.0",
