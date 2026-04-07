@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { TailwindThemeProvider } from "@/components/theme-provider"
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,12 +25,14 @@ export default function RootLayout({
 	children: React.ReactNode;
 }) {
 	return (
-		<html lang="en" className="dark">
+		<html lang="en" suppressHydrationWarning>
 			<head>
 				<link rel="icon" href="/favicon.svg" type="image/svg+xml"></link>
 			</head>
 			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-				 <TooltipProvider>{children}</TooltipProvider>
+				 <TailwindThemeProvider>
+					<TooltipProvider>{children}</TooltipProvider>
+				</TailwindThemeProvider>
 			</body>
 		</html>
 	);

@@ -23,7 +23,7 @@ import { useSession } from "@/lib/auth-client";
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+import { NavHeader } from "@/components/nav-header"
 import {
   Sidebar,
   SidebarContent,
@@ -33,28 +33,6 @@ import {
 } from "@/components/ui/sidebar"
  
 const gyat = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
       title: "Playground",
@@ -189,7 +167,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={gyat.teams} />
+        <NavHeader />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={gyat.navMain} />
