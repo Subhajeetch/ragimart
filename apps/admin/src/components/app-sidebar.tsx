@@ -6,6 +6,8 @@ import {
   ScrollText,
   Package,
   ShoppingCart,
+  User,
+  Star,
   type LucideIcon,
 } from "lucide-react"
 
@@ -50,15 +52,10 @@ const sidebarLinks: {
     icon: Package,
   },
   {
-    title: "Audit Logs",
-    type: "link",
-    url: "#",
-    icon: ScrollText,
-  },
-  {
     title: "Products",
     type: "dropdown",
     icon: ShoppingCart,
+    isActive: true,
     items: [
       {
         title: "Manage Products",
@@ -69,6 +66,33 @@ const sidebarLinks: {
         url: "#",
       }
     ]
+  },
+  {
+    title: "Users",
+    type: "dropdown",
+    icon: User,
+    items: [
+      {
+        title: "Manage Users",
+        url: "#",
+      },
+      {
+        title: "Manage Admins",
+        url: "#",
+      }
+    ]
+  },
+  {
+    title: "Reviews",
+    type: "link",
+    url: "#",
+    icon: Star,
+  },
+  {
+    title: "Audit Logs",
+    type: "link",
+    url: "#",
+    icon: ScrollText,
   }
 ]
  
