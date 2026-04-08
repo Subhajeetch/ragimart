@@ -10,7 +10,7 @@ export default function LoginClient() {
   const { data } = useSession();
 
   if (data?.session) {
-    router.push("/home");
+    router.push("/overview");
     return null;
   }
 
@@ -18,7 +18,9 @@ export default function LoginClient() {
     <LoginForm
       authClient={authClient}
       appUrl={process.env.NEXT_PUBLIC_APP_URL}
-      onSuccess={() => router.push("/home")}
+      onSuccess={() => router.push("/overview")}
     />
   );
 }
+
+// onSuccess is only for email login redirection

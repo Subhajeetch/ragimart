@@ -2,13 +2,11 @@
 
 import * as React from "react"
 import {
-  BookOpen,
-  Bot,
   Frame,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
+  ScrollText,
+  Package,
+  ShoppingCart,
+  type LucideIcon,
 } from "lucide-react"
 
 import { Session } from "@repo/types/session-client";
@@ -16,11 +14,9 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 
-
-import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
 import { NavHeader } from "@/components/nav-header"
+import { SidebarLinks } from "@/components/sidebar-links"
 import {
   Sidebar,
   SidebarContent,
@@ -28,113 +24,54 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
+
+
+const sidebarLinks: {
+  title: string;
+  type: "link" | "dropdown";
+  url?: string;
+  icon: LucideIcon;
+  isActive?: boolean;
+  items?: {
+    title: string;
+    url: string;
+  }[];
+}[] = [
+  {
+    title: "Overview",
+    type: "link",
+    url: "/overview",
+    icon: Frame,
+  },
+  {
+    title: "Order Management",
+    type: "link",
+    url: "#",
+    icon: Package,
+  },
+  {
+    title: "Audit Logs",
+    type: "link",
+    url: "#",
+    icon: ScrollText,
+  },
+  {
+    title: "Products",
+    type: "dropdown",
+    icon: ShoppingCart,
+    items: [
+      {
+        title: "Manage Products",
+        url: "#",
+      },
+      {
+        title: "Add Product",
+        url: "#",
+      }
+    ]
+  }
+]
  
-const gyat = {
-  navMain: [
-    {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
-}
 
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -159,7 +96,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       avatar: session.user.image ?? "/avatars/default.jpg",
     }
 
-    console.log(finalUser);
+    //console.log(finalUser);
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -167,8 +104,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavHeader />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={gyat.navMain} />
-        <NavProjects projects={gyat.projects} />
+        <SidebarLinks items={sidebarLinks} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={finalUser} />
