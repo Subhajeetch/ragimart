@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import LoginForm from "@repo/ui/auth/login-form";
 import { authClient } from "@/lib/auth-client";
@@ -9,8 +10,13 @@ export default function LoginClient() {
   const router = useRouter();
   const { data } = useSession();
 
+  useEffect(() => {
+    if (data?.session) {
+      router.push("/overview");
+    }
+  }, [data?.session, router]);
+
   if (data?.session) {
-    router.push("/overview");
     return null;
   }
 
