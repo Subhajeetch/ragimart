@@ -12,7 +12,7 @@ export default function LoginClient() {
 
   useEffect(() => {
     if (data?.session) {
-      router.push("/overview");
+      router.push("/home");
     }
   }, [data?.session, router]);
 

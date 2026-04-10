@@ -283,7 +283,8 @@ function Bar({
       <rect
         x={x}
         y={0}
-        width={barWidth}
+       // width={barWidth}
+        className="w-full min-w-7.5"
         height={chartBottomY + 28}
         rx={4}
         fill="none"
@@ -439,7 +440,8 @@ export function BarChart({
     >
       {/* Header */}
       {(title || description) && (
-        <div className="px-4 pt-5 pb-2">
+        <div className="px-4 pt-5 p
+        b-2">
           {title && (
             <h3 className="text-base font-semibold leading-none tracking-tight">
               {title}
