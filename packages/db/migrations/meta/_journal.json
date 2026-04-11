@@ -15,6 +15,13 @@
       "when": 1774271740193,
       "tag": "0001_narrow_smasher",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1775915378085,
+      "tag": "0002_left_stardust",
+      "breakpoints": true
     }
   ]
 }

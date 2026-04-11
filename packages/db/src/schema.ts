@@ -94,3 +94,14 @@ export const verifications = sqliteTable("verifications", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
+
+
+// only the override perms
+export const userPermissions = sqliteTable("user_permissions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  permission: text("permission").notNull(),
+  granted: integer("granted", { mode: "boolean" }).notNull().default(true),
+  grantedBy: text("granted_by").references(() => users.id),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
