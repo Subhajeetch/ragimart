@@ -4,6 +4,9 @@ export const PERMISSIONS = {
   PRODUCT_UPDATE:  "product:update",
   PRODUCT_DELETE:  "product:delete",
 
+  CATEGORY_TREE_READ: "category_tree:read",
+  CATEGORY_MANAGE:    "category:manage",
+
   REVIEW_WRITE:    "review:write",
   REVIEW_DELETE:   "review:delete",
   REVIEW_MODERATE: "review:moderate",
@@ -34,6 +37,8 @@ export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     PERMISSIONS.PRODUCT_CREATE,
     PERMISSIONS.PRODUCT_UPDATE,
     PERMISSIONS.PRODUCT_DELETE,
+    PERMISSIONS.CATEGORY_TREE_READ,
+    PERMISSIONS.CATEGORY_MANAGE,
     PERMISSIONS.REVIEW_WRITE,
     PERMISSIONS.REVIEW_DELETE,
     PERMISSIONS.REVIEW_MODERATE,
