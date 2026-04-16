@@ -6,6 +6,7 @@ import sendResetPassEmail from "@/utils/sendResetPassEmail";
 
 interface Env {
   DB: D1Database;
+  KV: KVNamespace;
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
   NODE_ENV?: string;
