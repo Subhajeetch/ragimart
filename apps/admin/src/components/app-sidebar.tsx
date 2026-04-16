@@ -8,6 +8,7 @@ import {
   ShoppingCart,
   User,
   Star,
+  ShoppingBag,
   type LucideIcon,
 } from "lucide-react"
 
@@ -93,6 +94,12 @@ const sidebarLinks: {
     type: "link",
     url: "#",
     icon: ScrollText,
+  },
+  {
+    title: "AliExpress Connection",
+    type: "link",
+    url: "#",
+    icon: ShoppingBag,
   }
 ]
  

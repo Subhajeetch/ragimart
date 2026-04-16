@@ -1,4 +1,5 @@
 export const PERMISSIONS = {
+  ANALYTICS_VIEW:  "analytics:view",
   PRODUCT_READ:    "product:read",
   PRODUCT_CREATE:  "product:create",
   PRODUCT_UPDATE:  "product:update",
@@ -19,12 +20,12 @@ export const PERMISSIONS = {
   USER_MANAGE:     "user:manage",
 
   ADMIN_ACCESS:    "admin:access",
-  ANALYTICS_VIEW:  "analytics:view",
+  AE_CONNECTION_MANAGE: "ae_connection:manage",
 } as const;
 
 export type Permission = typeof PERMISSIONS[keyof typeof PERMISSIONS];
 
-//default perms
+
 export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
   customer: [
     PERMISSIONS.PRODUCT_READ,
@@ -33,6 +34,7 @@ export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     PERMISSIONS.ORDER_CANCEL,
   ],
   admin: [
+    PERMISSIONS.ANALYTICS_VIEW,
     PERMISSIONS.PRODUCT_READ,
     PERMISSIONS.PRODUCT_CREATE,
     PERMISSIONS.PRODUCT_UPDATE,
@@ -48,7 +50,7 @@ export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     PERMISSIONS.USER_BAN,
     PERMISSIONS.USER_MANAGE,
     PERMISSIONS.ADMIN_ACCESS,
-    PERMISSIONS.ANALYTICS_VIEW,
+    PERMISSIONS.AE_CONNECTION_MANAGE,
   ],
   superadmin: Object.values(PERMISSIONS) as Permission[],
 };
