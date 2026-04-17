@@ -30,7 +30,8 @@
 	"kv_namespaces": [
     {
       "binding": "KV",
-      "id": "505621efcfc34bd896f67746e308bbfa"
+      "id": "505621efcfc34bd896f67746e308bbfa",
+	  "preview_id": "fd5006da879642f9ade898a85f19c199"
     }
   ]
 	/**

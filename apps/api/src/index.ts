@@ -6,7 +6,7 @@ import { createDb } from "@repo/db";
 import sendResetPassEmail from "@/utils/sendResetPassEmail";
 
 // routes import
-import { aeProduct } from "./routes";
+import { aeProduct, aeAuth } from "./routes";
 
 
 const app = new Hono<{ Bindings: Env }>();
@@ -37,7 +37,12 @@ app.all("/api/auth/*", (c) => {
   return auth.handler(c.req.raw);
 });
 
+app.get("/api/health", () => {
+  return new Response("OK");
+});
+
 //routes
-app.route("/api/ae/*", aeProduct);
+app.route("/api/ae/", aeProduct);
+app.route("/api/ae/", aeAuth);
 
 export default app;

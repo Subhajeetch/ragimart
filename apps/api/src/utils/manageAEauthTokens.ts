@@ -1,11 +1,9 @@
 const KV_KEY = "ali_tokens";
 import config from "@/base.config";
-import kvManager from "./kvManager";
 
-const { AE_API_BASE } = config;
+const { AE_API_BASE, AE_AUTH_BASE } = config;
 
-//types
-
+// Types
 type TokenData = {
   access_token: string;
   refresh_token: string;
@@ -18,30 +16,79 @@ type AEEnv = {
   KV: KVNamespace;
 };
 
-//helpers
-async function sha256(message: string): Promise<string> {
-  const buffer = new TextEncoder().encode(message);
-  const hash = await crypto.subtle.digest("SHA-256", buffer);
-  return Array.from(new Uint8Array(hash))
+async function hmacSha256(message: string, secret: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(message)
+  );
+
+  return Array.from(new Uint8Array(signature))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("")
     .toUpperCase();
 }
 
-async function generateSign(
+async function generateSignSystem(
+  params: Record<string, string>,
+  appSecret: string,
+  apiPath: string
+): Promise<string> {
+  const filtered: Record<string, string> = {};
+  for (const key in params) {
+    const value = params[key];
+    if (key !== "sign" && value !== undefined && value !== null && value !== "") {
+      filtered[key] = value;
+    }
+  }
+
+  const sortedKeys = Object.keys(filtered).sort();
+  const paramString = sortedKeys.map((k) => `${k}${filtered[k]}`).join("");
+  const stringToSign = apiPath + paramString;
+
+  console.log("🔑 SIGN STRING (system):", stringToSign);
+
+  return hmacSha256(stringToSign, appSecret);
+}
+
+async function generateSignBusiness(
   params: Record<string, string>,
   appSecret: string
 ): Promise<string> {
-  const sorted = Object.keys(params)
-    .sort()
-    .map((key) => `${key}${params[key]}`)
-    .join("");
+  const filtered: Record<string, string> = {};
+  for (const key in params) {
+    const value = params[key];
+    if (key !== "sign" && value !== undefined && value !== null && value !== "") {
+      filtered[key] = value;
+    }
+  }
 
-  return sha256(`${appSecret}${sorted}${appSecret}`);
+  const sortedKeys = Object.keys(filtered).sort();
+  const paramString = sortedKeys.map((k) => `${k}${filtered[k]}`).join("");
+
+  console.log("🔑 SIGN STRING (business):", paramString);
+
+  return hmacSha256(paramString, appSecret);
 }
 
-async function buildParams(
+
+function buildQueryString(params: Record<string, string>): string {
+  return Object.entries(params)
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join("&");
+}
+
+async function buildSystemParams(
   env: AEEnv,
+  apiPath: string,
   extra: Record<string, string>
 ): Promise<Record<string, string>> {
   const base: Record<string, string> = {
@@ -51,15 +98,15 @@ async function buildParams(
     ...extra,
   };
 
-  const sign = await generateSign(base, env.AE_APP_SECRET);
+  const sign = await generateSignSystem(base, env.AE_APP_SECRET, apiPath);
   return { ...base, sign };
 }
 
-//kv helpers
+//kvhelpers
+
 async function readTokens(kv: KVNamespace): Promise<TokenData | null> {
   const raw = await kv.get(KV_KEY);
   if (!raw) return null;
-
   try {
     return JSON.parse(raw) as TokenData;
   } catch {
@@ -75,28 +122,23 @@ async function writeTokens(kv: KVNamespace, tokens: TokenData): Promise<void> {
   await kv.put(KV_KEY, JSON.stringify(tokens), { expirationTtl: ttlSeconds });
 }
 
-async function fetchNewTokens(
-  env: AEEnv,
-  code: string
-): Promise<TokenData> {
-  const params = await buildParams(env, {
+//token fetcher
+async function fetchNewTokens(env: AEEnv, code: string): Promise<TokenData> {
+  const apiPath = "/auth/token/create";
+
+  const params = await buildSystemParams(env, apiPath, {
     code,
-    uuid: crypto.randomUUID(),
+    grant_type: "authorization_code",
   });
 
-  const res = await fetch(`${AE_API_BASE}/auth/token/create`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded;charset=utf-8" },
-    body: new URLSearchParams(params),
-  });
+  const url = `${AE_AUTH_BASE}${apiPath}?${buildQueryString(params)}`;
+  console.log("📤 Token create URL:", url);
 
-  if (!res.ok) {
-    throw new Error(`AliExpress token create HTTP error: ${res.status}`);
-  }
+  const res = await fetch(url, { method: "GET" });
+  const data = await res.json<any>();
+  console.log("📥 Token create response:", data);
 
-  const data = await res.json<Record<string, string>>();
-
-  if (data.code !== "0") {
+  if (!data.access_token) {
     throw new Error(`AliExpress token create error: ${JSON.stringify(data)}`);
   }
 
@@ -111,23 +153,21 @@ async function fetchRefreshedTokens(
   env: AEEnv,
   currentRefreshToken: string
 ): Promise<TokenData> {
-  const params = await buildParams(env, {
+  const apiPath = "/auth/token/refresh";
+
+  const params = await buildSystemParams(env, apiPath, {
     refresh_token: currentRefreshToken,
+    grant_type: "refresh_token",
   });
 
-  const res = await fetch(`${AE_API_BASE}/auth/token/refresh`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded;charset=utf-8" },
-    body: new URLSearchParams(params),
-  });
+  const url = `${AE_AUTH_BASE}${apiPath}?${buildQueryString(params)}`;
+  console.log("📤 Token refresh URL:", url);
 
-  if (!res.ok) {
-    throw new Error(`AliExpress token refresh HTTP error: ${res.status}`);
-  }
+  const res = await fetch(url, { method: "GET" });
+  const data = await res.json<any>();
+  console.log("📥 Token refresh response:", data);
 
-  const data = await res.json<Record<string, string>>();
-
-  if (data.code !== "0") {
+  if (!data.access_token) {
     throw new Error(`AliExpress token refresh error: ${JSON.stringify(data)}`);
   }
 
@@ -138,7 +178,7 @@ async function fetchRefreshedTokens(
   };
 }
 
-
+//to get the tokens
 export async function connectAliExpress(
   env: AEEnv,
   code: string
@@ -166,7 +206,6 @@ export async function getAccessToken(env: AEEnv): Promise<string> {
 
   return tokens.access_token;
 }
-
 
 export async function isConnected(env: AEEnv): Promise<boolean> {
   const tokens = await readTokens(env.KV);
