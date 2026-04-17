@@ -1,19 +1,13 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import type Env from "@/types/env";
 import { createAuth } from "@repo/auth/server";
 import { createDb } from "@repo/db";
 import sendResetPassEmail from "@/utils/sendResetPassEmail";
 
-interface Env {
-  DB: D1Database;
-  KV: KVNamespace;
-  GOOGLE_CLIENT_ID: string;
-  GOOGLE_CLIENT_SECRET: string;
-  NODE_ENV?: string;
-  API_URL?: string;
-  ORIGINS?: string;
-  DOMAIN?: string;
-}
+// routes import
+import { aeProduct } from "./routes";
+
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -42,5 +36,8 @@ app.all("/api/auth/*", (c) => {
   );
   return auth.handler(c.req.raw);
 });
+
+//routes
+app.route("/api/ae/*", aeProduct);
 
 export default app;
