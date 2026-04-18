@@ -54,29 +54,9 @@ async function generateSignSystem(
   const paramString = sortedKeys.map((k) => `${k}${filtered[k]}`).join("");
   const stringToSign = apiPath + paramString;
 
-  console.log("🔑 SIGN STRING (system):", stringToSign);
+  console.log("SIGN STRING:", stringToSign);
 
   return hmacSha256(stringToSign, appSecret);
-}
-
-async function generateSignBusiness(
-  params: Record<string, string>,
-  appSecret: string
-): Promise<string> {
-  const filtered: Record<string, string> = {};
-  for (const key in params) {
-    const value = params[key];
-    if (key !== "sign" && value !== undefined && value !== null && value !== "") {
-      filtered[key] = value;
-    }
-  }
-
-  const sortedKeys = Object.keys(filtered).sort();
-  const paramString = sortedKeys.map((k) => `${k}${filtered[k]}`).join("");
-
-  console.log("🔑 SIGN STRING (business):", paramString);
-
-  return hmacSha256(paramString, appSecret);
 }
 
 
@@ -132,11 +112,10 @@ async function fetchNewTokens(env: AEEnv, code: string): Promise<TokenData> {
   });
 
   const url = `${AE_AUTH_BASE}${apiPath}?${buildQueryString(params)}`;
-  console.log("📤 Token create URL:", url);
 
   const res = await fetch(url, { method: "GET" });
   const data = await res.json<any>();
-  console.log("📥 Token create response:", data);
+ // console.log("token create response:", data);
 
   if (!data.access_token) {
     throw new Error(`AliExpress token create error: ${JSON.stringify(data)}`);
@@ -161,11 +140,10 @@ async function fetchRefreshedTokens(
   });
 
   const url = `${AE_AUTH_BASE}${apiPath}?${buildQueryString(params)}`;
-  console.log("📤 Token refresh URL:", url);
 
   const res = await fetch(url, { method: "GET" });
   const data = await res.json<any>();
-  console.log("📥 Token refresh response:", data);
+  //console.log("token refresh response:", data);
 
   if (!data.access_token) {
     throw new Error(`AliExpress token refresh error: ${JSON.stringify(data)}`);
